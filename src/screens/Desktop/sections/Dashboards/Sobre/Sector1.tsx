@@ -81,7 +81,6 @@ export const Sector1 = (): JSX.Element => {
     if (teamPhotoFile) {
       formData.append('sobre_photo', teamPhotoFile);
     }
-    formData.append('_method', 'PUT');
 
     try {
       await api.post(`/sobre/update`, formData); // Rota simplificada sem ID
