@@ -2,12 +2,10 @@ import { Card, CardContent } from "../../../../../components/ui/card";
 
 export const Sector1 = (): JSX.Element => {
   const bankInfo = [
-    "Banco ABC",
-    "Agencia: 1234",
-    "Conta: 1234567-8",
-    "",
-    "Pix: 12 12345-6789",
-    "ccti.polvo@gmail.com",
+    "Banco Itau",
+    "Chave-Pix: CNPJ 55.554.125/0001-55",
+    "Mercado Pago",
+    "12 99216-2503",
   ];
 
   const contributionWays = [
