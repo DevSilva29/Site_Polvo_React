@@ -5,7 +5,8 @@ export const Sector1 = (): JSX.Element => {
     "Banco Itau",
     "Agência: 2931",
     "Conta Corrente: 01699-8",
-    "Pix",
+    "",
+    "Chaves Pix",
     "Banco Itau",
     "Chave Pix: 55.554.125/0001-55",
     "Mercado Pago",
@@ -48,7 +49,7 @@ export const Sector1 = (): JSX.Element => {
                 ))}
               </div>
 
-              <div className="relative w-[170px]">
+              <div className="relative w-[170px] text-center">
                 <div className="bg-white p-5 text-center">
                   <p className="font-normal text-base text-black font-['IBM_Plex_Sans',Helvetica]">
                     Pague com QR Code Aqui!
@@ -59,6 +60,9 @@ export const Sector1 = (): JSX.Element => {
                   alt="QR Code para pagamento"
                   src="/frame-1.png"
                 />
+                <p className="text-sm text-black mt-2 font-['IBM_Plex_Sans',Helvetica]">
+                  * Escaneie com o aplicativo do seu banco
+                </p>
               </div>
             </div>
           </div>
