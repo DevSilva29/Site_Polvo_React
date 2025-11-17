@@ -3,7 +3,11 @@ import { Card, CardContent } from "../../../../../components/ui/card";
 export const Sector1 = (): JSX.Element => {
   const bankInfo = [
     "Banco Itau",
-    "Chave Pix: 55.554.125/0001-55",
+    "Agência: 2931",
+    "Conta Corrente: 01699-8",
+    "Pix",
+    "Banco Itau",
+    "Chave Pix: ",
     "Mercado Pago",
     "Chave Pix: 12 99216-2503",
   ];
