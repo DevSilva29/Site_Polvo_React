@@ -8,7 +8,7 @@ export const Footer = (): JSX.Element => {
     address:
       "Estamos localizados na\nRua Eduardo Cássio, 220 - Porto Grande\nSão Sebastião/SP\nCEP: 03664-040",
     bankInfo:
-      "Banco Itau\nAgência: 2931\nConta-Corrente: 01699-8\n\nPix:\n 12 12345-6789\n55.554.125/0001-55",
+      "Banco Itau\nAgência: 2931\nConta-Corrente: 01699-8\n\nPix:\n 12 99216-2503\n55.554.125/0001-55",
     social: {
       instagram: "@ccti.polvo",
     },

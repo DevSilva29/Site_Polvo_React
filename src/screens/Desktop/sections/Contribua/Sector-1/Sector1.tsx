@@ -5,12 +5,6 @@ export const Sector1 = (): JSX.Element => {
     "Banco Itau",
     "Agência: 2931",
     "Conta Corrente: 01699-8",
-    "",
-    "Chaves Pix",
-    "Banco Itau",
-    "Chave Pix: 55.554.125/0001-55",
-    "Mercado Pago",
-    "Chave Pix: 12 99216-2503",
   ];
 
   const contributionWays = [
@@ -60,7 +54,10 @@ export const Sector1 = (): JSX.Element => {
                   alt="QR Code para pagamento"
                   src="/frame-1.png"
                 />
-                <p className="text-sm text-black mt-2 font-['IBM_Plex_Sans',Helvetica]">
+                <p className="font-bold text-base text-black mt-2 font-['IBM_Plex_Sans',Helvetica]">
+                  PIX:<br />12 992162503
+                </p>
+                <p className="text-sm text-black mt-1 font-['IBM_Plex_Sans',Helvetica]">
                   * Escaneie com o aplicativo do seu banco
                 </p>
               </div>
