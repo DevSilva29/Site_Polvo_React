@@ -7,7 +7,7 @@ export const Sector1 = (): JSX.Element => {
     "Conta Corrente: 01699-8",
     "Pix",
     "Banco Itau",
-    "Chave Pix: ",
+    "Chave Pix: 01699-8",
     "Mercado Pago",
     "Chave Pix: 12 99216-2503",
   ];
