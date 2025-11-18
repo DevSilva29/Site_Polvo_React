@@ -19,6 +19,45 @@ export const Sector1 = (): JSX.Element => {
       <Card className="max-w-[879px] mx-auto bg-[#ffffffb2] rounded-[10px]">
         <CardContent className="p-16">
           <div className="space-y-16">
+            <h2 className="text-center text-2xl font-bold text-black font-['IBM_Plex_Sans',Helvetica]">
+              PARA DOAÇÕES
+            </h2>
+
+            <div className="grid grid-cols-3 gap-8 border border-gray-400 p-6">
+              {/* Depósito / Transferência */}
+              <div className="text-center space-y-4 border-r border-gray-400 pr-4">
+                <p className="text-lg font-bold">DEPÓSITO<br/>OU<br/>TRANSFERÊNCIA</p>
+                <p className="text-base">BANCO: ITAÚ</p>
+                <p className="text-base">AGÊNCIA: 2931</p>
+                <p className="text-base">CONTA CORRENTE: 01699-8</p>
+              </div>
+
+              {/* Em Dinheiro */}
+              <div className="text-center space-y-4 border-r border-gray-400 px-4 flex flex-col justify-center">
+                <p className="text-lg font-bold">EM DINHEIRO</p>
+                <p className="text-base">PROCURAR<br/>TESOURARIA</p>
+              </div>
+
+              {/* QR Code */}
+              <div className="text-center pl-4">
+                <p className="text-lg font-bold mb-2">QRCODE</p>
+                <img
+                  className="w-[150px] h-[150px] object-cover mx-auto"
+                  alt="QR Code para pagamento"
+                  src="/frame-1.png"
+                />
+                <p className="font-bold text-base mt-4">PIX:</p>
+                <p className="text-base">12 992162503</p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </section>
+    <section className="w-auto h-auto py-16 bg-[url(/background-img-2.png)] bg-cover bg-center">
+      <Card className="max-w-[879px] mx-auto bg-[#ffffffb2] rounded-[10px]">
+        <CardContent className="p-16">
+          <div className="space-y-16">
             <div className="space-y-16">
               <p className="font-light text-2xl text-center text-black leading-9 font-['IBM_Plex_Sans',Helvetica]">
                 O Centro de Convivência da Terceira Idade Polvo conta com a sua
