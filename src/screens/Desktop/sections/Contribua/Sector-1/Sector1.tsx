@@ -75,7 +75,7 @@ export const Sector1 = (): JSX.Element => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border border-gray-300 p-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border border-gray-300 p-6 bg-white">
               {/* Depósito / Transferência */}
               <div className="text-center space-y-4 border-r border-gray-400 pr-4 flex flex-col justify-center">
                 <p className="text-lg font-bold">DEPÓSITO<br/>OU<br/>TRANSFERÊNCIA</p>
