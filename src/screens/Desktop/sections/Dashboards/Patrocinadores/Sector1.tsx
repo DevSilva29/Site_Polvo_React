@@ -1,51 +1,36 @@
-import { ArrowLeftIcon, ImagePlus, PencilIcon, Trash2Icon, X } from "lucide-react";
-import React, { useState, useEffect, FormEvent, ChangeEvent } from "react";
-import { Link } from "react-router-dom";
+import { ArrowLeftIcon, ChevronLeftIcon, ChevronRightIcon, PencilIcon, Trash2Icon, X } from "lucide-react";
+import { useState, useEffect, FormEvent, ChangeEvent } from "react";
 import api from "../../../../../api/axiosInstance";
 import { Button } from "../../../../../components/ui/button";
 import { Card, CardContent } from "../../../../../components/ui/card";
-import { Input } from "../../../../../components/ui/input";
+import { Link } from "react-router-dom";
 
-// Interface para os dados que vêm da API
 interface Sponsor {
   id: number;
   name: string;
-  logo: string; // URL completa da imagem
-  url: string;  // Link do site
+  logo: string;
+  url: string;
 }
 
-// Interface para os dados do formulário
 interface SponsorFormData {
   name: string;
   url: string;
 }
 
 export const Sector1 = (): JSX.Element => {
-  // --- ESTADOS ---
-  const [sponsors, setSponsors] = useState<Sponsor[]>([]);
-  const [selectedSponsor, setSelectedSponsor] = useState<Partial<SponsorFormData> & { id?: number, logo?: string } | null>(null);
-  const [logoFile, setLogoFile] = useState<File | null>(null);
-  
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [allSponsors, setAllSponsors] = useState<Sponsor[]>([]);
+  const [selectedSponsor, setSelectedSponsor] = useState<Partial<Sponsor> | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isFloatingMenuOpen, setIsFloatingMenuOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formKey, setFormKey] = useState(Date.now()); // Para resetar o input de arquivo
 
-  // --- LÓGICA DE API ---
   const fetchSponsors = async () => {
     try {
-      setIsLoading(true);
       const response = await api.get('/patrocinadores');
-      
-      // Lógica robusta: verifica se vem em 'data' ou direto
-      const dataList = Array.isArray(response.data.data) 
-        ? response.data.data 
-        : (Array.isArray(response.data) ? response.data : []);
-
-      setSponsors(dataList);
+      setAllSponsors(response.data);;
     } catch (error) {
       console.error("Erro ao buscar patrocinadores:", error);
-      setSponsors([]);
     } finally {
       setIsLoading(false);
     }
@@ -61,7 +46,8 @@ export const Sector1 = (): JSX.Element => {
         await api.delete(`/patrocinadores/${id}`);
         fetchSponsors();
       } catch (error) {
-        alert("Falha ao excluir patrocinador.");
+        console.error("Erro ao deletar patrocinador:", error);
+        alert("Não foi possível excluir o patrocinador.");
       }
     }
   };
@@ -75,56 +61,47 @@ export const Sector1 = (): JSX.Element => {
     formData.append('patrocinadores_name', selectedSponsor.name || '');
     formData.append('patrocinadores_url', selectedSponsor.url || '');
     
-    if (logoFile) {
-      formData.append('patrocinadores_logo', logoFile);
+    if (selectedFile) {
+      formData.append('patrocinadores_logo', selectedFile);
     }
 
     try {
-      if (selectedSponsor.id) { // ATUALIZAR
+      if (selectedSponsor.id) {
         formData.append('_method', 'PUT');
         await api.post(`/patrocinadores/${selectedSponsor.id}`, formData);
-      } else { // CRIAR
-        if (!logoFile) {
-          alert("O logo é obrigatório para novos patrocinadores.");
+      } else {
+        if (!selectedFile) {
+          alert('Por favor, adicione um logo para o novo patrocinador.');
           setIsSubmitting(false);
           return;
         }
         await api.post('/patrocinadores', formData);
       }
-      handleCloseModal();
+
+
+      setIsFloatingMenuOpen(false);
+      setSelectedSponsor(null);
+      setSelectedFile(null);
       fetchSponsors();
+
     } catch (error) {
-      console.error(error);
-      alert("Falha ao salvar patrocinador. Verifique os campos.");
+      console.error("Erro ao salvar patrocinador:", error);
+      alert('Erro ao salvar. Verifique se todos os campos (nome, URL e logo) estão corretos.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // --- HANDLERS DA UI ---
-  const handleNew = () => {
-    setSelectedSponsor({ id: 0, name: '', url: '' });
-    setLogoFile(null);
-    setFormKey(Date.now());
-    setIsModalOpen(true);
-  };
-
   const handleEdit = (sponsor: Sponsor) => {
-    setSelectedSponsor({
-        id: sponsor.id,
-        name: sponsor.name,
-        url: sponsor.url,
-        logo: sponsor.logo // Guardamos a URL atual para mostrar preview
-    });
-    setLogoFile(null);
-    setFormKey(Date.now());
-    setIsModalOpen(true);
+    setSelectedSponsor(sponsor);
+    setSelectedFile(null);
+    setIsFloatingMenuOpen(true);
   };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedSponsor(null);
-    setLogoFile(null);
+  
+  const handleAddNew = () => {
+    setSelectedSponsor({ id: 0, name: "", url: "", logo: "" });
+    setSelectedFile(null);
+    setIsFloatingMenuOpen(true);
   };
 
   const handleInputChange = (field: keyof SponsorFormData, value: string) => {
@@ -133,88 +110,90 @@ export const Sector1 = (): JSX.Element => {
     }
   };
 
-  if (isLoading) return <div className="p-48 text-center">A carregar patrocinadores...</div>;
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0]);
+    }
+  };
+
+  const handleCloseMenu = () => {
+    setIsFloatingMenuOpen(false);
+    setSelectedSponsor(null);
+    setSelectedFile(null);
+  };
+
+  const [currentPage, setCurrentPage] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const sponsorsPerPage = 4;
+  const totalPages = Math.ceil(allSponsors.length / sponsorsPerPage);
+  const currentSponsors = allSponsors.slice(currentPage * sponsorsPerPage, (currentPage + 1) * sponsorsPerPage);
+  const handlePrevious = () => { if (currentPage > 0 && !isAnimating) { setIsAnimating(true); setTimeout(() => { setCurrentPage(currentPage - 1); setIsAnimating(false); }, 150); } };
+  const handleNext = () => { if (currentPage < totalPages - 1 && !isAnimating) { setIsAnimating(true); setTimeout(() => { setCurrentPage(currentPage + 1); setIsAnimating(false); }, 150); } };
+
+
+  if (isLoading) {
+    return <div className="p-48 text-center">Carregando patrocinadores...</div>;
+  }
 
   return (
-    <section className="w-full py-16 bg-[url(/background-img-2.png)] bg-cover min-h-screen">
-      <Card className="mx-auto max-w-6xl bg-white/80 backdrop-blur-sm">
-        <CardContent className="p-8 md:p-16">
-          <div className="flex items-center mb-8">
-            <Link to="/d_menu" className="mr-4 p-2 hover:bg-gray-200 rounded-full"><ArrowLeftIcon className="h-6 w-6" /></Link>
-            <h2 className="text-4xl font-bold">Gerir Patrocinadores</h2>
-          </div>
-          
-          <Button onClick={handleNew} className="mb-8 bg-blue-600 hover:bg-blue-700 text-white">
-            <ImagePlus className="mr-2 h-4 w-4" /> Novo Patrocinador
-          </Button>
-          
-          <div className="w-full overflow-hidden">
-            {/* --- LÓGICA DE "NÃO HÁ DADOS" --- */}
-            {sponsors.length > 0 ? (
-                <div className="space-y-4">
-                    {sponsors.map((sponsor) => (
-                    <div key={sponsor.id} className="bg-slate-50 p-4 rounded-lg shadow flex justify-between items-center">
-                        <div className="flex items-center gap-4">
-                            <img src={sponsor.logo} alt={sponsor.name} className="h-16 w-16 object-contain bg-white rounded border p-1" />
-                            <div>
-                                <h3 className="font-bold text-lg">{sponsor.name}</h3>
-                                <a href={sponsor.url} target="_blank" rel="noreferrer" className="text-sm text-blue-600 hover:underline truncate max-w-[200px] block">{sponsor.url}</a>
-                            </div>
-                        </div>
-                        <div className="flex gap-2">
-                            <Button variant="ghost" size="icon" onClick={() => handleEdit(sponsor)}><PencilIcon className="h-5 w-5 text-blue-600" /></Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleDelete(sponsor.id)}><Trash2Icon className="h-5 w-5 text-red-500" /></Button>
-                        </div>
+    <section className="bg-[url(/background-img-2.png)] bg-cover bg-center w-full py-16 relative min-h-screen">
+      <Card className="mx-auto max-w-6xl bg-white/70 rounded-[10px] z-10 relative">
+        <CardContent className="p-16">
+          <div className="flex flex-col items-center">
+            <div className="flex items-center w-full mb-12">
+              <Link to={"/d_menu"} className="mr-4 h-10 w-10 flex items-center justify-center hover:bg-gray-200 rounded-full transition-colors" aria-label="Voltar para a página anterior">
+                <ArrowLeftIcon className="h-6 w-6 text-gray-800" />
+              </Link>
+              <h2 className="text-4xl font-semibold text-black font-['Inter',Helvetica]">Patrocinadores</h2>
+            </div>
+
+            <div className="w-full overflow-hidden min-h-[400px]">
+              <div className={`w-full space-y-8 transition-all duration-300 ease-in-out ${isAnimating ? 'opacity-0 transform translate-x-4' : 'opacity-100 transform translate-x-0'}`}>
+                {currentSponsors.length > 0 ? currentSponsors.map((sponsor) => (
+                  <div key={sponsor.id} className="w-full h-[79px] bg-[#beebffb2] rounded-[10px] flex items-center justify-between px-4">
+                    <div className="flex items-center">
+                      <img className="w-[61px] h-[61px] object-contain rounded-lg bg-white p-1" alt={`Logo ${sponsor.name}`} src={sponsor.logo} />
+                      <span className="ml-4 font-['IBM_Plex_Sans',Helvetica] font-light text-black text-lg">{sponsor.name}</span>
                     </div>
-                    ))}
-                </div>
-            ) : (
-                <div className="text-center py-20 text-gray-500">
-                    <p className="text-xl font-medium">Nenhum patrocinador registado.</p>
-                    <p className="mt-2 text-sm">Clique em "Novo Patrocinador" para adicionar parceiros.</p>
-                </div>
-            )}
+                    <div className="flex items-center gap-3">
+                      <Button variant="ghost" size="icon" className="h-[35px] w-[35px] hover:bg-blue-100 rounded-full" onClick={() => handleEdit(sponsor)}><PencilIcon className="h-5 w-5 text-gray-700" /></Button>
+                      <Button variant="ghost" size="icon" className="h-[35px] w-[35px] hover:bg-red-100 rounded-full" onClick={() => handleDelete(sponsor.id)}><Trash2Icon className="h-5 w-5 text-gray-700" /></Button>
+                    </div>
+                  </div>
+                )) : (
+                  <div className="text-center py-20 text-gray-500"><p>Nenhum patrocinador encontrado.</p></div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between w-full mt-8">
+              <div className="flex-1"></div>
+              <Button className="bg-[#beecff] text-[#3661a0] hover:bg-[#a9d9f0] rounded-lg px-6 py-3.5 h-[66px]" onClick={handleAddNew}>Novo Patrocinador</Button>
+              <div className="flex-1 flex justify-end gap-2">
+                <div className="flex items-center gap-2 mr-4"><span className="text-sm text-gray-600">{totalPages > 0 ? currentPage + 1 : 0} de {totalPages}</span></div>
+                <Button variant="ghost" size="icon" className={`h-[45px] w-[33px]`} onClick={handlePrevious} disabled={currentPage === 0 || isAnimating}><ChevronLeftIcon className="h-6 w-6" /></Button>
+                <Button variant="ghost" size="icon" className={`h-[45px] w-[33px]`} onClick={handleNext} disabled={currentPage >= totalPages - 1 || isAnimating}><ChevronRightIcon className="h-6 w-6" /></Button>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* --- MODAL --- */}
-      {isModalOpen && selectedSponsor && (
+      {isFloatingMenuOpen && selectedSponsor && (
         <>
-          <div className="fixed inset-0 bg-black/50 z-40" onClick={handleCloseModal} />
+          <div className="fixed inset-0 bg-black/20 z-40" onClick={handleCloseMenu} />
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-lg p-6 w-full max-w-lg">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-bold">{selectedSponsor.id ? 'Editar Patrocinador' : 'Novo Patrocinador'}</h3>
-                <Button variant="ghost" size="icon" onClick={handleCloseModal}><X className="h-5 w-5" /></Button>
+            <div className="bg-white rounded-lg shadow-xl border p-6 w-[550px] max-w-full">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">{selectedSponsor.id ? "Editar Patrocinador" : "Novo Patrocinador"}</h3>
+                <Button variant="ghost" size="icon" className="h-6 w-6 hover:bg-gray-100" onClick={handleCloseMenu}><X className="h-4 w-4" /></Button>
               </div>
-              
-              <form key={formKey} onSubmit={handleSave} className="space-y-4">
-                <div>
-                    <label className="block text-sm font-medium mb-1">Nome da Empresa</label>
-                    <Input type="text" value={selectedSponsor.name || ''} onChange={(e) => handleInputChange('name', e.target.value)} required />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium mb-1">Link do Site (URL)</label>
-                    <Input type="url" value={selectedSponsor.url || ''} onChange={(e) => handleInputChange('url', e.target.value)} placeholder="https://..." required />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium mb-1">Logo (Imagem)</label>
-                    <Input type="file" accept="image/*" onChange={(e) => setLogoFile(e.target.files ? e.target.files[0] : null)} required={!selectedSponsor.id} />
-                    {selectedSponsor.id && selectedSponsor.logo && !logoFile && (
-                        <div className="mt-2">
-                            <p className="text-xs text-gray-500 mb-1">Logo Atual:</p>
-                            <img src={selectedSponsor.logo} alt="Logo atual" className="h-12 object-contain border p-1" />
-                        </div>
-                    )}
-                </div>
+              <form onSubmit={handleSave} className="space-y-4">
+                <div><label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Nome</label><input id="name" type="text" value={selectedSponsor.name || ''} onChange={(e) => handleInputChange('name', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md" required /></div>
+                <div><label htmlFor="url" className="block text-sm font-medium text-gray-700 mb-1">URL (link do site)</label><input id="url" type="url" value={selectedSponsor.url || ''} onChange={(e) => handleInputChange('url', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="https://exemplo.com" required/></div>
+                <div><label htmlFor="logo" className="block text-sm font-medium text-gray-700 mb-1">Logo (PNG ou JPG)</label><input id="logo" type="file" accept="image/png, image/jpeg" onChange={handleFileChange} className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" required={!selectedSponsor.id} /></div>
                 
-                <div className="flex justify-end gap-2 pt-4">
-                  <Button type="button" variant="ghost" onClick={handleCloseModal}>Cancelar</Button>
-                  <Button type="submit" disabled={isSubmitting} className="bg-blue-600 hover:bg-blue-700 text-white">
-                    {isSubmitting ? 'A guardar...' : 'Salvar'}
-                  </Button>
-                </div>
+                <div className="flex justify-end gap-3 pt-4"><Button type="button" variant="ghost" onClick={handleCloseMenu}>Cancelar</Button><Button type="submit" disabled={isSubmitting} className="bg-blue-600 hover:bg-blue-700 text-white">{isSubmitting ? 'Salvando...' : (selectedSponsor.id ? "Salvar" : "Adicionar")}</Button></div>
               </form>
             </div>
           </div>
