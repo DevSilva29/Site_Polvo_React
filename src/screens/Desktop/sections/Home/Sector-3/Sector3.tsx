@@ -37,7 +37,7 @@ export const Sector3 = (): JSX.Element => {
         <div className="relative flex justify-center mb-12">
           <div className="bg-[#ffffffbf] rounded-[15px] px-8 py-4">
             <h2 className="font-['Inter',Helvetica] font-bold text-black text-5xl text-center">
-              Veja quem já colaborou com a gente!
+              Empresas que colaboraram com a causa do idoso!
             </h2>
           </div>
         </div>
